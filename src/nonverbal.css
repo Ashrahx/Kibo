@@ -43,3 +43,160 @@
 .orb-grid {
   display: none;
 }
+
+/* Eye language based on the supplied expression sheet. */
+.eyes {
+  width: 34%;
+  height: 29%;
+}
+
+.eye {
+  width: 24%;
+  height: 58%;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.12);
+}
+
+.eye-left {
+  left: 15%;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.eye-right {
+  right: 15%;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+/* HAPPY — clean, upright pills. */
+.orb.emotion-happy .eye-left,
+.orb.emotion-happy .eye-right {
+  width: 24%;
+  height: 58%;
+  top: 50%;
+  border-radius: 999px;
+}
+
+.orb.emotion-happy .eye-left {
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.orb.emotion-happy .eye-right {
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+/* EXCITED — both eyes open outward like the reference. */
+.orb.emotion-excited .eye-left,
+.orb.emotion-excited .eye-right {
+  width: 24%;
+  height: 58%;
+  top: 50%;
+  border-radius: 999px;
+}
+
+.orb.emotion-excited .eye-left {
+  transform: translateY(-50%) rotate(14deg) scale(1);
+}
+
+.orb.emotion-excited .eye-right {
+  transform: translateY(-50%) rotate(-14deg) scale(1);
+}
+
+/* THINKING — one normal eye and one small dot, slightly lower. */
+.orb.emotion-thinking .eye-left {
+  width: 24%;
+  height: 58%;
+  top: 50%;
+  left: 20%;
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.orb.emotion-thinking .eye-right {
+  width: 23%;
+  height: 23%;
+  top: 64%;
+  right: 12%;
+  border-radius: 50%;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+/* CONFUSED — left eye low/straight, right eye raised and tilted. */
+.orb.emotion-confused .eye-left {
+  width: 24%;
+  height: 58%;
+  top: 56%;
+  left: 14%;
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.orb.emotion-confused .eye-right {
+  width: 24%;
+  height: 64%;
+  top: 40%;
+  right: 13%;
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(-14deg) scale(1);
+}
+
+/* SURPRISED — tall, wide ovals. */
+.orb.emotion-surprised .eye-left,
+.orb.emotion-surprised .eye-right {
+  width: 31%;
+  height: 82%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.orb.emotion-surprised .eye-left {
+  left: 8%;
+}
+
+.orb.emotion-surprised .eye-right {
+  right: 8%;
+}
+
+/* SAD — smaller eyes, subtly drooping toward the centre. */
+.orb.emotion-sad .eye-left,
+.orb.emotion-sad .eye-right {
+  width: 23%;
+  height: 55%;
+  top: 55%;
+  border-radius: 999px;
+}
+
+.orb.emotion-sad .eye-left {
+  transform: translateY(-50%) rotate(7deg) scale(1);
+}
+
+.orb.emotion-sad .eye-right {
+  transform: translateY(-50%) rotate(-7deg) scale(1);
+}
+
+/* ANGRY — low, sharp inward diagonals. */
+.orb.emotion-angry .eye-left,
+.orb.emotion-angry .eye-right {
+  width: 24%;
+  height: 62%;
+  top: 56%;
+  border-radius: 999px;
+}
+
+.orb.emotion-angry .eye-left {
+  left: 16%;
+  transform: translateY(-50%) rotate(48deg) scale(1);
+}
+
+.orb.emotion-angry .eye-right {
+  right: 16%;
+  transform: translateY(-50%) rotate(-48deg) scale(1);
+}
+
+/* Keep the blink working regardless of each expression's geometry. */
+.eyes.is-blinking .eye {
+  transform: translateY(-50%) scaleY(0.08) !important;
+}
