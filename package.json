@@ -1,0 +1,36 @@
+{
+  "name": "gemini-avatar-bot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.5.1",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"tsx watch api/server.ts\"",
+    "dev:client": "vite",
+    "dev:api": "tsx watch api/server.ts",
+    "build": "vite build && tsc -p tsconfig.api.json",
+    "preview": "vite preview",
+    "start": "node dist-api/server.js"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@google/genai": "^2.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1"
+  }
+}
