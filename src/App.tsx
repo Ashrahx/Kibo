@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { playBotSound, primeBotAudio, stopBotSounds } from './audio/botSounds';
+import { playBotSound, playBotUtterance, primeBotAudio, stopBotSounds } from './audio/botSounds';
 import { Avatar } from './components/Avatar';
 import { ChatPanel } from './components/ChatPanel';
 import type {
@@ -98,8 +98,8 @@ function App() {
     }
 
     try {
-      const duration = await playBotSound(reply.sound, reply.intensity);
-      returnToIdle(Math.max(850, duration + 360));
+      const duration = await playBotUtterance(reply.text, reply.sound, reply.intensity);
+      returnToIdle(Math.max(850, duration + 260));
     } catch {
       returnToIdle(1000);
     }
