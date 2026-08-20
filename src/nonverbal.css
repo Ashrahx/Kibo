@@ -1,12 +1,45 @@
+.app-shell {
+  background:
+    radial-gradient(circle at 18% 38%, rgba(89, 27, 251, 0.14), transparent 32%),
+    radial-gradient(circle at 78% 16%, rgba(83, 61, 255, 0.08), transparent 26%),
+    linear-gradient(135deg, #09090d 0%, #0d0d12 52%, #08080b 100%);
+}
+
 .live-dot.state-reacting {
-  background: #ff4854;
-  box-shadow: 0 0 0 5px rgba(255, 72, 84, 0.1), 0 0 18px rgba(255, 72, 84, 0.42);
+  background: #591BFB;
+  box-shadow: 0 0 0 5px rgba(89, 27, 251, 0.12), 0 0 18px rgba(89, 27, 251, 0.45);
+}
+
+.status-aura {
+  background: radial-gradient(circle, rgba(89, 27, 251, 0.2), transparent 68%);
 }
 
 .status-aura.state-reacting {
+  background: radial-gradient(circle, rgba(89, 27, 251, 0.22), transparent 68%);
   animation: aura-pulse 0.72s ease-in-out infinite;
+}
+
+.orb {
+  background: #591BFB;
+  box-shadow:
+    inset -32px -36px 52px rgba(24, 6, 82, 0.28),
+    inset 18px 16px 40px rgba(255, 255, 255, 0.09),
+    0 42px 82px rgba(0, 0, 0, 0.44),
+    0 0 86px rgba(89, 27, 251, 0.22);
+}
+
+.orb.state-listening {
+  box-shadow:
+    inset -32px -36px 52px rgba(24, 6, 82, 0.28),
+    inset 18px 16px 40px rgba(255, 255, 255, 0.09),
+    0 42px 82px rgba(0, 0, 0, 0.44),
+    0 0 88px rgba(63, 207, 255, 0.16);
 }
 
 .orb.state-reacting {
   animation: speaking-pulse calc(0.58s - var(--intensity) * 0.14s) ease-in-out infinite;
+}
+
+.orb-grid {
+  display: none;
 }
