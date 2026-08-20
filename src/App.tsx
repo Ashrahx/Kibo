@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { playBotSound, primeBotAudio, stopBotSounds } from './audio/botSounds';
 import { Avatar } from './components/Avatar';
 import { ChatPanel } from './components/ChatPanel';
 import type {
@@ -6,6 +7,7 @@ import type {
   AvatarEmotion,
   AvatarState,
   BotReply,
+  BotSound,
   ChatMessage,
 } from './types';
 
@@ -35,11 +37,22 @@ const initialMessages: ChatMessage[] = [
   {
     id: 'welcome',
     role: 'assistant',
-    text: 'Qué onda. Soy el bot de prueba. Háblame y voy a reaccionar con expresiones mientras respondo.',
+    text: 'Qué onda. Soy el bot de prueba. No hablo: respondo por texto y reacciono con sonidos, gestos y expresiones.',
   },
 ];
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const demoSoundByEmotion: Record<AvatarEmotion, BotSound> = {
+  neutral: 'murmur',
+  happy: 'chirp',
+  excited: 'celebrate',
+  thinking: 'murmur',
+  confused: 'blep',
+  surprised: 'gasp',
+  sad: 'sigh',
+  angry: 'grumble',
+};
 
 function App() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -48,7 +61,7 @@ function App() {
   const [emotion, setEmotion] = useState<AvatarEmotion>('neutral');
   const [action, setAction] = useState<AvatarAction>('none');
   const [intensity, setIntensity] = useState(0.45);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const resetTimerRef = useRef<number | null>(null);
@@ -73,37 +86,29 @@ function App() {
     }, delay);
   }, []);
 
-  const speak = useCallback((text: string, reply: BotReply) => {
-    if (!voiceEnabled || !('speechSynthesis' in window)) {
-      setAvatarState('speaking');
-      returnToIdle(1600 + Math.min(text.length * 12, 2600));
+  const react = useCallback(async (reply: BotReply) => {
+    setAvatarState('reacting');
+    setEmotion(reply.emotion);
+    setAction(reply.action);
+    setIntensity(reply.intensity);
+
+    if (!soundEnabled) {
+      returnToIdle(1300);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-MX';
-    utterance.rate = 1.03;
-    utterance.pitch = 1.02;
-
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find((voice) => /es[-_]MX/i.test(voice.lang))
-      ?? voices.find((voice) => /^es/i.test(voice.lang));
-    if (preferredVoice) utterance.voice = preferredVoice;
-
-    utterance.onstart = () => {
-      setAvatarState('speaking');
-      setEmotion(reply.emotion);
-      setAction(reply.action);
-      setIntensity(reply.intensity);
-    };
-    utterance.onend = () => returnToIdle(600);
-    utterance.onerror = () => returnToIdle(500);
-    window.speechSynthesis.speak(utterance);
-  }, [returnToIdle, voiceEnabled]);
+    try {
+      const duration = await playBotSound(reply.sound, reply.intensity);
+      returnToIdle(Math.max(850, duration + 360));
+    } catch {
+      returnToIdle(1000);
+    }
+  }, [returnToIdle, soundEnabled]);
 
   const sendMessage = useCallback(async (text: string) => {
-    window.speechSynthesis?.cancel();
+    stopBotSounds();
+    if (soundEnabled) void primeBotAudio();
+
     const userMessage: ChatMessage = { id: uid(), role: 'user', text };
     const history = [...messages.filter((item) => item.id !== 'welcome'), userMessage].slice(-12);
 
@@ -129,10 +134,7 @@ function App() {
         ...current,
         { id: uid(), role: 'assistant', text: reply.text },
       ]);
-      setEmotion(reply.emotion);
-      setAction(reply.action);
-      setIntensity(reply.intensity);
-      speak(reply.text, reply);
+      await react(reply);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
       setMessages((current) => [
@@ -143,11 +145,12 @@ function App() {
       setEmotion('sad');
       setAction('shake');
       setIntensity(0.9);
-      returnToIdle(2600);
+      if (soundEnabled) void playBotSound('error', 0.9);
+      returnToIdle(1800);
     } finally {
       setBusy(false);
     }
-  }, [messages, returnToIdle, speak]);
+  }, [messages, react, returnToIdle, soundEnabled]);
 
   const toggleListening = useCallback(() => {
     if (!Recognition) return;
@@ -157,6 +160,7 @@ function App() {
       return;
     }
 
+    if (soundEnabled) void primeBotAudio();
     const recognition = new Recognition();
     recognition.lang = 'es-MX';
     recognition.interimResults = false;
@@ -178,6 +182,7 @@ function App() {
     recognition.onerror = () => {
       setListening(false);
       setAvatarState('error');
+      if (soundEnabled) void playBotSound('error', 0.7);
       returnToIdle(1200);
     };
 
@@ -187,9 +192,9 @@ function App() {
     setAction('none');
     setIntensity(0.55);
     recognition.start();
-  }, [Recognition, busy, listening, returnToIdle, sendMessage]);
+  }, [Recognition, busy, listening, returnToIdle, sendMessage, soundEnabled]);
 
-  const demoEmotion = (nextEmotion: AvatarEmotion) => {
+  const demoEmotion = async (nextEmotion: AvatarEmotion) => {
     const demoAction: Record<AvatarEmotion, AvatarAction> = {
       neutral: 'none',
       happy: 'nod',
@@ -201,17 +206,39 @@ function App() {
       angry: 'shake',
     };
 
-    window.speechSynthesis?.cancel();
-    setAvatarState(nextEmotion === 'thinking' ? 'thinking' : 'speaking');
+    stopBotSounds();
+    clearResetTimer();
+    const nextIntensity = nextEmotion === 'excited' || nextEmotion === 'angry' ? 0.9 : 0.65;
+    setAvatarState(nextEmotion === 'thinking' ? 'thinking' : 'reacting');
     setEmotion(nextEmotion);
     setAction(demoAction[nextEmotion]);
-    setIntensity(nextEmotion === 'excited' || nextEmotion === 'angry' ? 0.9 : 0.65);
-    returnToIdle(1800);
+    setIntensity(nextIntensity);
+
+    if (soundEnabled) {
+      try {
+        const duration = await playBotSound(demoSoundByEmotion[nextEmotion], nextIntensity);
+        returnToIdle(Math.max(900, duration + 420));
+        return;
+      } catch {
+        // Fall through to visual-only timing.
+      }
+    }
+
+    returnToIdle(1600);
+  };
+
+  const toggleSound = () => {
+    setSoundEnabled((current) => {
+      const next = !current;
+      if (next) void primeBotAudio();
+      else stopBotSounds();
+      return next;
+    });
   };
 
   useEffect(() => () => {
     clearResetTimer();
-    window.speechSynthesis?.cancel();
+    stopBotSounds();
     recognitionRef.current?.stop();
   }, []);
 
@@ -233,11 +260,11 @@ function App() {
       <ChatPanel
         messages={messages}
         busy={busy}
-        voiceEnabled={voiceEnabled}
+        soundEnabled={soundEnabled}
         speechSupported={speechSupported}
         listening={listening}
         onSend={sendMessage}
-        onToggleVoice={() => setVoiceEnabled((value) => !value)}
+        onToggleSound={toggleSound}
         onToggleListening={toggleListening}
         onDemoEmotion={demoEmotion}
       />
