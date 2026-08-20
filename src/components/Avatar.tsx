@@ -107,8 +107,6 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
         style={style}
       >
         <div className="orb-glow" />
-        <div className="orb-grid orb-grid-a" />
-        <div className="orb-grid orb-grid-b" />
         <div className="orb-highlight" />
         <div className={`eyes ${blink ? 'is-blinking' : ''}`}>
           <span className="eye eye-left" />
