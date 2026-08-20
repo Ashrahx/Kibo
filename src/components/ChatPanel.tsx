@@ -4,11 +4,11 @@ import type { AvatarEmotion, ChatMessage } from '../types';
 interface ChatPanelProps {
   messages: ChatMessage[];
   busy: boolean;
-  voiceEnabled: boolean;
+  soundEnabled: boolean;
   speechSupported: boolean;
   listening: boolean;
   onSend: (text: string) => Promise<void>;
-  onToggleVoice: () => void;
+  onToggleSound: () => void;
   onToggleListening: () => void;
   onDemoEmotion: (emotion: AvatarEmotion) => void;
 }
@@ -18,11 +18,11 @@ const demoEmotions: AvatarEmotion[] = ['happy', 'excited', 'thinking', 'confused
 export function ChatPanel({
   messages,
   busy,
-  voiceEnabled,
+  soundEnabled,
   speechSupported,
   listening,
   onSend,
-  onToggleVoice,
+  onToggleSound,
   onToggleListening,
   onDemoEmotion,
 }: ChatPanelProps) {
@@ -56,8 +56,8 @@ export function ChatPanel({
           <h1>Bot de prueba</h1>
         </div>
         <div className="header-actions">
-          <button className={`mini-button ${voiceEnabled ? 'active' : ''}`} onClick={onToggleVoice} type="button">
-            {voiceEnabled ? 'Voz activa' : 'Voz apagada'}
+          <button className={`mini-button ${soundEnabled ? 'active' : ''}`} onClick={onToggleSound} type="button">
+            {soundEnabled ? 'Sonidos activos' : 'Sonidos apagados'}
           </button>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function ChatPanel({
         )}
       </div>
 
-      <div className="expression-strip" aria-label="Prueba de expresiones">
+      <div className="expression-strip" aria-label="Prueba de expresiones y sonidos">
         <span>Probar</span>
         {demoEmotions.map((emotion) => (
           <button key={emotion} type="button" onClick={() => onDemoEmotion(emotion)}>
