@@ -1,4 +1,4 @@
-export type AvatarState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
+export type AvatarState = 'idle' | 'listening' | 'thinking' | 'reacting' | 'error';
 
 export type AvatarEmotion =
   | 'neutral'
@@ -19,6 +19,17 @@ export type AvatarAction =
   | 'look_right'
   | 'look_up';
 
+export type BotSound =
+  | 'murmur'
+  | 'chirp'
+  | 'giggle'
+  | 'grumble'
+  | 'gasp'
+  | 'sigh'
+  | 'blep'
+  | 'celebrate'
+  | 'error';
+
 export type ChatRole = 'user' | 'assistant';
 
 export interface ChatMessage {
@@ -31,6 +42,7 @@ export interface BotReply {
   text: string;
   emotion: AvatarEmotion;
   action: AvatarAction;
+  sound: BotSound;
   intensity: number;
   model?: string;
 }
