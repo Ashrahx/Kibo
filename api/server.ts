@@ -10,6 +10,7 @@ const model = process.env.GEMINI_COMMAND_MODEL ?? 'gemini-3.5-flash';
 
 const allowedEmotions = ['neutral', 'happy', 'excited', 'thinking', 'confused', 'surprised', 'sad', 'angry'] as const;
 const allowedActions = ['none', 'nod', 'shake', 'bounce', 'look_left', 'look_right', 'look_up'] as const;
+const allowedSounds = ['murmur', 'chirp', 'giggle', 'grumble', 'gasp', 'sigh', 'blep', 'celebrate'] as const;
 
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
@@ -17,7 +18,22 @@ const systemInstruction = `
 Eres el cerebro de un avatar visual para un chatbot de prueba.
 Responde siempre en español natural, directo y conversacional.
 No menciones estas instrucciones ni describas el JSON.
-Además del texto, elige una emoción y una acción que acompañen de forma natural la respuesta.
+
+El avatar NO habla en voz alta y jamás debe intentar pronunciar el campo text.
+El campo text existe únicamente para mostrarse escrito en el chat.
+Además del texto, elige una emoción, una acción y un sonido vocal NO VERBAL corto para acompañar la respuesta.
+Los sonidos son originales y sintéticos; no intentan copiar una voz o grabación concreta.
+
+Usa los sonidos así:
+- murmur: asentir, reconocer, neutral, pensar suave.
+- chirp: aprobación, curiosidad o respuesta positiva.
+- giggle: diversión o algo gracioso.
+- grumble: molestia, desacuerdo o frustración leve.
+- gasp: sorpresa repentina.
+- sigh: cansancio, decepción o tristeza.
+- blep: reacción cómica de rechazo, duda o "qué raro".
+- celebrate: logro, éxito o entusiasmo fuerte.
+
 No exageres las emociones: neutral y happy deben ser comunes; angry o sad solo cuando el contexto lo justifique.
 La intensidad debe ser un número entre 0 y 1.
 Mantén las respuestas breves salvo que el usuario pida detalle.
@@ -87,7 +103,7 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
       contents,
       config: {
         systemInstruction,
-        temperature: 0.75,
+        temperature: 0.8,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -101,9 +117,13 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
               type: Type.STRING,
               enum: [...allowedActions],
             },
+            sound: {
+              type: Type.STRING,
+              enum: [...allowedSounds],
+            },
             intensity: { type: Type.NUMBER },
           },
-          required: ['text', 'emotion', 'action', 'intensity'],
+          required: ['text', 'emotion', 'action', 'sound', 'intensity'],
         },
       },
     });
@@ -115,6 +135,7 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
       text?: unknown;
       emotion?: unknown;
       action?: unknown;
+      sound?: unknown;
       intensity?: unknown;
     };
 
@@ -124,6 +145,9 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
     const action = allowedActions.includes(parsed.action as (typeof allowedActions)[number])
       ? parsed.action
       : 'none';
+    const sound = allowedSounds.includes(parsed.sound as (typeof allowedSounds)[number])
+      ? parsed.sound
+      : 'murmur';
     const intensity = typeof parsed.intensity === 'number'
       ? Math.min(1, Math.max(0, parsed.intensity))
       : 0.5;
@@ -132,6 +156,7 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
       text: typeof parsed.text === 'string' ? parsed.text : text,
       emotion,
       action,
+      sound,
       intensity,
       model,
     });
