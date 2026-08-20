@@ -1,0 +1,12 @@
+.live-dot.state-reacting {
+  background: #ff4854;
+  box-shadow: 0 0 0 5px rgba(255, 72, 84, 0.1), 0 0 18px rgba(255, 72, 84, 0.42);
+}
+
+.status-aura.state-reacting {
+  animation: aura-pulse 0.72s ease-in-out infinite;
+}
+
+.orb.state-reacting {
+  animation: speaking-pulse calc(0.58s - var(--intensity) * 0.14s) ease-in-out infinite;
+}
