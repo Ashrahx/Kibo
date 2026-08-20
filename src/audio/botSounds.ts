@@ -23,8 +23,12 @@ function createEnvelope(
   gain: number,
 ) {
   const envelope = context.createGain();
+  const attack = Math.min(0.018, duration * 0.18);
+  const releaseStart = Math.max(start + attack, start + duration * 0.58);
+
   envelope.gain.setValueAtTime(0.0001, start);
-  envelope.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), start + Math.min(0.025, duration * 0.15));
+  envelope.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), start + attack);
+  envelope.gain.setValueAtTime(Math.max(0.0002, gain * 0.82), releaseStart);
   envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   envelope.connect(destination);
   return envelope;
@@ -124,15 +128,258 @@ function noiseBurst(
 function createOutput(context: AudioContext, intensity: number) {
   const compressor = context.createDynamicsCompressor();
   const master = context.createGain();
-  master.gain.value = 0.6 + clamp(intensity, 0, 1) * 0.28;
-  compressor.threshold.value = -18;
-  compressor.knee.value = 16;
+
+  master.gain.value = 0.52 + clamp(intensity, 0, 1) * 0.24;
+  compressor.threshold.value = -20;
+  compressor.knee.value = 18;
   compressor.ratio.value = 5;
   compressor.attack.value = 0.004;
   compressor.release.value = 0.14;
+
   master.connect(compressor);
   compressor.connect(context.destination);
   return master;
+}
+
+interface VocalUnit {
+  vowel: string;
+  pauseAfter: number;
+  emphasis: number;
+}
+
+const punctuationPause: Record<string, number> = {
+  ',': 0.065,
+  ';': 0.09,
+  ':': 0.09,
+  '.': 0.14,
+  '!': 0.12,
+  '?': 0.12,
+};
+
+function tokenizeVocalUnits(text: string): VocalUnit[] {
+  const tokens = text.match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+|[.,!?;:]/g) ?? [];
+  const units: VocalUnit[] = [];
+
+  for (const token of tokens) {
+    if (punctuationPause[token]) {
+      const last = units.at(-1);
+      if (last) {
+        last.pauseAfter += punctuationPause[token];
+        if (token === '!' || token === '?') last.emphasis = Math.max(last.emphasis, 1.2);
+      }
+      continue;
+    }
+
+    const vowelGroups = token.match(/[aeiouáéíóúü]+/gi) ?? [token];
+    const uppercaseBoost = token.length > 1 && token === token.toUpperCase() ? 1.12 : 1;
+
+    vowelGroups.forEach((vowel, index) => {
+      units.push({
+        vowel: vowel.toLowerCase(),
+        pauseAfter: index === vowelGroups.length - 1 ? 0.032 : 0.012,
+        emphasis: uppercaseBoost,
+      });
+    });
+  }
+
+  return units.slice(0, 120);
+}
+
+function seedFromText(value: string, index: number) {
+  let seed = 17 + index * 31;
+  for (const char of value) seed = (seed * 33 + char.charCodeAt(0)) >>> 0;
+  return seed;
+}
+
+function formantForVowel(vowel: string) {
+  const normalized = vowel.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (normalized.includes('i')) return 1180;
+  if (normalized.includes('e')) return 930;
+  if (normalized.includes('a')) return 760;
+  if (normalized.includes('o')) return 590;
+  if (normalized.includes('u')) return 470;
+  return 720;
+}
+
+interface SpeechProfile {
+  basePitch: number;
+  pitchRange: number;
+  duration: number;
+  formantShift: number;
+  gain: number;
+  vibrato: number;
+  glide: number;
+  type: OscillatorType;
+  breath: number;
+}
+
+const speechProfiles: Record<BotSound, SpeechProfile> = {
+  murmur: {
+    basePitch: 165,
+    pitchRange: 55,
+    duration: 0.105,
+    formantShift: -80,
+    gain: 0.072,
+    vibrato: 3,
+    glide: 0.94,
+    type: 'sawtooth',
+    breath: 0.004,
+  },
+  chirp: {
+    basePitch: 245,
+    pitchRange: 125,
+    duration: 0.088,
+    formantShift: 150,
+    gain: 0.064,
+    vibrato: 6,
+    glide: 1.09,
+    type: 'triangle',
+    breath: 0.002,
+  },
+  giggle: {
+    basePitch: 285,
+    pitchRange: 155,
+    duration: 0.076,
+    formantShift: 180,
+    gain: 0.058,
+    vibrato: 8,
+    glide: 1.12,
+    type: 'triangle',
+    breath: 0.003,
+  },
+  grumble: {
+    basePitch: 92,
+    pitchRange: 42,
+    duration: 0.12,
+    formantShift: -180,
+    gain: 0.085,
+    vibrato: 2,
+    glide: 0.91,
+    type: 'sawtooth',
+    breath: 0.009,
+  },
+  gasp: {
+    basePitch: 220,
+    pitchRange: 150,
+    duration: 0.09,
+    formantShift: 230,
+    gain: 0.058,
+    vibrato: 4,
+    glide: 1.16,
+    type: 'triangle',
+    breath: 0.012,
+  },
+  sigh: {
+    basePitch: 145,
+    pitchRange: 55,
+    duration: 0.125,
+    formantShift: -40,
+    gain: 0.055,
+    vibrato: 2,
+    glide: 0.88,
+    type: 'triangle',
+    breath: 0.014,
+  },
+  blep: {
+    basePitch: 175,
+    pitchRange: 95,
+    duration: 0.104,
+    formantShift: 20,
+    gain: 0.078,
+    vibrato: 4,
+    glide: 0.86,
+    type: 'sawtooth',
+    breath: 0.006,
+  },
+  celebrate: {
+    basePitch: 255,
+    pitchRange: 175,
+    duration: 0.078,
+    formantShift: 210,
+    gain: 0.065,
+    vibrato: 7,
+    glide: 1.14,
+    type: 'triangle',
+    breath: 0.003,
+  },
+  error: {
+    basePitch: 125,
+    pitchRange: 48,
+    duration: 0.115,
+    formantShift: -220,
+    gain: 0.075,
+    vibrato: 1,
+    glide: 0.78,
+    type: 'square',
+    breath: 0.004,
+  },
+};
+
+function scheduleVocalUnit(
+  context: AudioContext,
+  output: AudioNode,
+  unit: VocalUnit,
+  sound: BotSound,
+  start: number,
+  index: number,
+  intensity: number,
+) {
+  const profile = speechProfiles[sound];
+  const seed = seedFromText(unit.vowel, index);
+  const random01 = (seed % 1000) / 1000;
+  const pitchVariation = (random01 - 0.5) * profile.pitchRange;
+  const phraseWave = Math.sin(index * 1.73) * profile.pitchRange * 0.18;
+  const pitch = Math.max(60, profile.basePitch + pitchVariation + phraseWave);
+  const durationVariation = 0.86 + ((seed >>> 8) % 30) / 100;
+  const duration = profile.duration * durationVariation * (0.92 + intensity * 0.12);
+  const emphasis = unit.emphasis * (0.9 + intensity * 0.22);
+  const formant = clamp(
+    formantForVowel(unit.vowel) + profile.formantShift + (((seed >>> 16) % 80) - 40),
+    260,
+    1550,
+  );
+
+  const alternatingGlide = index % 3 === 2
+    ? 2 - profile.glide
+    : profile.glide;
+
+  vocalTone(context, output, {
+    start,
+    duration,
+    from: pitch,
+    to: Math.max(55, pitch * alternatingGlide),
+    gain: profile.gain * emphasis,
+    formant,
+    q: sound === 'grumble' ? 0.85 : 1.35,
+    type: profile.type,
+    vibrato: profile.vibrato,
+  });
+
+  vocalTone(context, output, {
+    start: start + 0.004,
+    duration: duration * 0.9,
+    from: pitch * 2.01,
+    to: Math.max(90, pitch * 2.01 * alternatingGlide),
+    gain: profile.gain * 0.19 * emphasis,
+    formant: clamp(formant * 1.28, 360, 1900),
+    q: 1.05,
+    type: 'sine',
+    vibrato: profile.vibrato * 0.55,
+  });
+
+  if (profile.breath > 0) {
+    noiseBurst(
+      context,
+      output,
+      start,
+      duration * 0.82,
+      profile.breath * emphasis,
+      Math.max(620, formant * 1.5),
+      Math.max(260, formant * 0.72),
+    );
+  }
+
+  return duration;
 }
 
 export async function primeBotAudio() {
@@ -149,6 +396,40 @@ export function stopBotSounds() {
     }
   }
   activeSources.clear();
+}
+
+export async function playBotUtterance(
+  text: string,
+  sound: BotSound,
+  intensity = 0.5,
+): Promise<number> {
+  const context = getContext();
+  if (context.state === 'suspended') await context.resume();
+
+  stopBotSounds();
+
+  const units = tokenizeVocalUnits(text);
+  if (!units.length) return playBotSound(sound, intensity);
+
+  const output = createOutput(context, intensity);
+  const start = context.currentTime + 0.02;
+  let cursor = start;
+
+  units.forEach((unit, index) => {
+    const duration = scheduleVocalUnit(
+      context,
+      output,
+      unit,
+      sound,
+      cursor,
+      index,
+      clamp(intensity, 0, 1),
+    );
+
+    cursor += duration + unit.pauseAfter;
+  });
+
+  return Math.round((cursor - start) * 1000);
 }
 
 export async function playBotSound(sound: BotSound, intensity = 0.5): Promise<number> {
