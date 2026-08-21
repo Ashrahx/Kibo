@@ -81,7 +81,7 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
   }, [state]);
 
   const forcedLook = useMemo<LookOffset>(() => {
-    if (state === 'thinking' || emotion === 'thinking') return { x: 7, y: -8 };
+    if (state === 'thinking' || emotion === 'thinking') return { x: 6, y: -7 };
     if (state === 'listening') return { x: 0, y: 1 };
     if (action === 'look_left') return { x: -10, y: 0 };
     if (action === 'look_right') return { x: 10, y: 0 };
@@ -108,11 +108,6 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
       >
         <div className="orb-glow" />
         <div className="orb-highlight" />
-        <div className="thinking-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
         <div className="listening-wave" aria-hidden="true">
           <span />
           <span />
