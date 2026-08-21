@@ -157,17 +157,19 @@
 .orb.emotion-sad .eye-left,
 .orb.emotion-sad .eye-right {
   width: 23%;
-  height: 55%;
+  height: 52%;
   top: 55%;
   border-radius: 999px;
 }
 
 .orb.emotion-sad .eye-left {
-  transform: translateY(-50%) rotate(7deg) scale(1);
+  left: 10%;
+  transform: translateY(-50%) rotate(38deg) scale(1);
 }
 
 .orb.emotion-sad .eye-right {
-  transform: translateY(-50%) rotate(-7deg) scale(1);
+  right: 10%;
+  transform: translateY(-50%) rotate(-38deg) scale(1);
 }
 
 .orb.emotion-angry .eye-left,
