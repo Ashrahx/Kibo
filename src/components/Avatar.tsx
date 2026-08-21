@@ -15,49 +15,87 @@ interface LookOffset {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const neutralGazeAnchors: LookOffset[] = [
+  { x: 0, y: 0 },
+  { x: -8, y: -2 },
+  { x: 6, y: -4 },
+  { x: 9, y: 2 },
+  { x: -5, y: 4 },
+  { x: 3, y: 1 },
+  { x: -2, y: -3 },
+];
+
 export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const pointerTrackingRef = useRef(false);
   const [blink, setBlink] = useState(false);
   const [idleLook, setIdleLook] = useState<LookOffset>({ x: 0, y: 0 });
+  const [idleLookDuration, setIdleLookDuration] = useState(420);
   const [pointerLook, setPointerLook] = useState<LookOffset>({ x: 0, y: 0 });
+  const [pointerTracking, setPointerTracking] = useState(false);
 
   useEffect(() => {
     let blinkTimer: number;
-    let lookTimer: number;
+    let blinkReleaseTimer: number;
 
     const scheduleBlink = () => {
       blinkTimer = window.setTimeout(() => {
         setBlink(true);
-        window.setTimeout(() => setBlink(false), 145);
+        blinkReleaseTimer = window.setTimeout(() => setBlink(false), 145);
         scheduleBlink();
       }, 2200 + Math.random() * 4200);
     };
 
-    const scheduleLook = () => {
-      lookTimer = window.setTimeout(() => {
-        if (state === 'idle') {
-          setIdleLook({
-            x: (Math.random() - 0.5) * 8,
-            y: (Math.random() - 0.5) * 5,
-          });
-          window.setTimeout(() => setIdleLook({ x: 0, y: 0 }), 650 + Math.random() * 700);
-        }
-        scheduleLook();
-      }, 1700 + Math.random() * 2600);
-    };
-
     scheduleBlink();
-    scheduleLook();
 
     return () => {
       window.clearTimeout(blinkTimer);
-      window.clearTimeout(lookTimer);
+      window.clearTimeout(blinkReleaseTimer);
     };
+  }, []);
+
+  useEffect(() => {
+    let gazeTimer: number;
+    let currentAnchor = 0;
+
+    const scheduleNextGaze = (initial = false) => {
+      const wait = initial ? 1500 + Math.random() * 1000 : 1250 + Math.random() * 2200;
+
+      gazeTimer = window.setTimeout(() => {
+        if (state !== 'idle' || pointerTrackingRef.current) {
+          scheduleNextGaze(false);
+          return;
+        }
+
+        const candidates = neutralGazeAnchors
+          .map((anchor, index) => ({ anchor, index }))
+          .filter(({ index }) => index !== currentAnchor);
+        const next = candidates[Math.floor(Math.random() * candidates.length)] ?? candidates[0];
+
+        if (next) {
+          currentAnchor = next.index;
+          setIdleLookDuration(360 + Math.round(Math.random() * 220));
+          setIdleLook(next.anchor);
+        }
+
+        scheduleNextGaze(false);
+      }, wait);
+    };
+
+    if (state === 'idle') {
+      scheduleNextGaze(true);
+    } else {
+      setIdleLook({ x: 0, y: 0 });
+    }
+
+    return () => window.clearTimeout(gazeTimer);
   }, [state]);
 
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
       if (!rootRef.current || state !== 'idle') {
+        pointerTrackingRef.current = false;
+        setPointerTracking(false);
         setPointerLook({ x: 0, y: 0 });
         return;
       }
@@ -68,8 +106,18 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
       const dx = event.clientX - centerX;
       const dy = event.clientY - centerY;
       const distance = Math.max(1, Math.hypot(dx, dy));
-      const weight = Math.min(1, distance / 420);
+      const engagementRadius = Math.max(360, box.width * 0.95);
+      const tracking = distance <= engagementRadius;
 
+      pointerTrackingRef.current = tracking;
+      setPointerTracking((current) => current === tracking ? current : tracking);
+
+      if (!tracking) {
+        setPointerLook({ x: 0, y: 0 });
+        return;
+      }
+
+      const weight = Math.min(1, distance / 420);
       setPointerLook({
         x: clamp((dx / distance) * 7 * weight, -7, 7),
         y: clamp((dy / distance) * 5 * weight, -5, 5),
@@ -90,12 +138,13 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
   }, [action, emotion, state]);
 
   const look = state === 'idle'
-    ? { x: pointerLook.x + idleLook.x, y: pointerLook.y + idleLook.y }
+    ? pointerTracking ? pointerLook : idleLook
     : forcedLook;
 
   const style = {
     '--look-x': `${look.x}px`,
     '--look-y': `${look.y}px`,
+    '--look-duration': `${pointerTracking ? 170 : idleLookDuration}ms`,
     '--intensity': clamp(intensity, 0, 1).toString(),
   } as CSSProperties;
 
