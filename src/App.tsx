@@ -43,6 +43,22 @@ const initialMessages: ChatMessage[] = [
 
 const uid = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+const avatarStateLabel: Record<AvatarState, string> = {
+  idle: 'Listo',
+  listening: 'Escuchando',
+  thinking: 'Pensando',
+  reacting: 'Reaccionando',
+  error: 'Error',
+};
+
+const avatarStateDetail: Record<AvatarState, string> = {
+  idle: 'microanimaciones activas',
+  listening: 'capturando audio',
+  thinking: 'procesando contexto',
+  reacting: 'respondiendo',
+  error: 'requiere atención',
+};
+
 const demoSoundByEmotion: Record<AvatarEmotion, BotSound> = {
   neutral: 'murmur',
   happy: 'chirp',
@@ -248,12 +264,12 @@ function App() {
       <section className="avatar-side">
         <div className="avatar-copy">
           <span className={`live-dot state-${avatarState}`} />
-          <span>{avatarState === 'idle' ? 'Listo' : avatarState}</span>
+          <span>{avatarStateLabel[avatarState]}</span>
         </div>
         <Avatar state={avatarState} emotion={emotion} action={action} intensity={intensity} />
         <div className="avatar-caption">
           <strong>{emotion}</strong>
-          <span>{action === 'none' ? 'microanimaciones activas' : action}</span>
+          <span>{avatarState === 'idle' && action !== 'none' ? action : avatarStateDetail[avatarState]}</span>
         </div>
       </section>
 
