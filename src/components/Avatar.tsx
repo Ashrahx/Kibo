@@ -28,6 +28,7 @@ const neutralGazeAnchors: LookOffset[] = [
 export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const pointerTrackingRef = useRef(false);
+  const pointerIdleTimerRef = useRef<number | null>(null);
   const [blink, setBlink] = useState(false);
   const [idleLook, setIdleLook] = useState<LookOffset>({ x: 0, y: 0 });
   const [idleLookDuration, setIdleLookDuration] = useState(420);
@@ -92,11 +93,17 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
   }, [state]);
 
   useEffect(() => {
+    const stopPointerTracking = () => {
+      pointerTrackingRef.current = false;
+      setPointerTracking(false);
+      setPointerLook({ x: 0, y: 0 });
+      setIdleLookDuration(420);
+      setIdleLook({ x: 0, y: 0 });
+    };
+
     const handlePointerMove = (event: PointerEvent) => {
       if (!rootRef.current || state !== 'idle') {
-        pointerTrackingRef.current = false;
-        setPointerTracking(false);
-        setPointerLook({ x: 0, y: 0 });
+        stopPointerTracking();
         return;
       }
 
@@ -106,26 +113,25 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
       const dx = event.clientX - centerX;
       const dy = event.clientY - centerY;
       const distance = Math.max(1, Math.hypot(dx, dy));
-      const engagementRadius = Math.max(360, box.width * 0.95);
-      const tracking = distance <= engagementRadius;
-
-      pointerTrackingRef.current = tracking;
-      setPointerTracking((current) => current === tracking ? current : tracking);
-
-      if (!tracking) {
-        setPointerLook({ x: 0, y: 0 });
-        return;
-      }
-
       const weight = Math.min(1, distance / 420);
+
+      pointerTrackingRef.current = true;
+      setPointerTracking(true);
       setPointerLook({
         x: clamp((dx / distance) * 7 * weight, -7, 7),
         y: clamp((dy / distance) * 5 * weight, -5, 5),
       });
+
+      if (pointerIdleTimerRef.current) window.clearTimeout(pointerIdleTimerRef.current);
+      pointerIdleTimerRef.current = window.setTimeout(stopPointerTracking, 1400);
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    return () => window.removeEventListener('pointermove', handlePointerMove);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      if (pointerIdleTimerRef.current) window.clearTimeout(pointerIdleTimerRef.current);
+    };
   }, [state]);
 
   const forcedLook = useMemo<LookOffset>(() => {
