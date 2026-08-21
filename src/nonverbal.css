@@ -49,6 +49,11 @@
   height: 29%;
 }
 
+.orb.state-idle.emotion-neutral .eyes {
+  transition: transform var(--look-duration, 320ms) cubic-bezier(.22, .72, .18, 1);
+  will-change: transform;
+}
+
 .eye {
   width: 24%;
   height: 58%;
