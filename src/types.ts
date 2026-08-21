@@ -32,6 +32,10 @@ export type BotSound =
 
 export type ChatRole = 'user' | 'assistant';
 
+export type WorkspaceMode = 'chat' | 'meeting' | 'minutes' | 'vofi';
+
+export type MinuteStyle = 'executive' | 'standard' | 'detailed';
+
 export interface ChatMessage {
   id: string;
   role: ChatRole;
@@ -45,4 +49,22 @@ export interface BotReply {
   sound: BotSound;
   intensity: number;
   model?: string;
+}
+
+export interface MinuteTask {
+  task: string;
+  responsible: string;
+  dueDate: string;
+  status: string;
+}
+
+export interface GeneratedMinute {
+  title: string;
+  objective: string;
+  summary: string;
+  decisions: string[];
+  agreements: string[];
+  tasks: MinuteTask[];
+  risks: string[];
+  nextSteps: string[];
 }
