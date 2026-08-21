@@ -101,22 +101,59 @@
   transform: translateY(-50%) rotate(-14deg) scale(1);
 }
 
-.orb.emotion-thinking .eye-left {
-  width: 24%;
-  height: 58%;
+.orb.emotion-thinking .eyes {
+  animation: thinking-gaze 3.2s cubic-bezier(.45, 0, .2, 1) infinite;
+}
+
+.orb.emotion-thinking .eye-left,
+.orb.emotion-thinking .eye-right {
+  width: 22%;
+  height: 54%;
   top: 50%;
-  left: 20%;
   border-radius: 999px;
-  transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+.orb.emotion-thinking .eye-left {
+  left: 14%;
+  animation: thinking-left-squint 3.2s ease-in-out infinite;
 }
 
 .orb.emotion-thinking .eye-right {
-  width: 23%;
-  height: 23%;
-  top: 64%;
-  right: 12%;
-  border-radius: 50%;
+  right: 14%;
   transform: translateY(-50%) rotate(0deg) scale(1);
+}
+
+@keyframes thinking-gaze {
+  0%, 12% {
+    transform: translate(calc(-50% + var(--look-x)), calc(-50% + var(--look-y))) rotate(-2deg);
+  }
+  22%, 42% {
+    transform: translate(calc(-50% + var(--look-x) + 5px), calc(-50% + var(--look-y) - 2px)) rotate(-4deg);
+  }
+  50%, 60% {
+    transform: translate(calc(-50% + var(--look-x) + 2px), calc(-50% + var(--look-y) - 1px)) rotate(-2deg);
+  }
+  72%, 88% {
+    transform: translate(calc(-50% + var(--look-x) - 12px), calc(-50% + var(--look-y) + 1px)) rotate(2deg);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--look-x)), calc(-50% + var(--look-y))) rotate(-2deg);
+  }
+}
+
+@keyframes thinking-left-squint {
+  0%, 38% {
+    transform: translateY(-50%) rotate(0deg) scale(1);
+  }
+  48% {
+    transform: translateY(-50%) rotate(5deg) scale(1, 0.58);
+  }
+  58% {
+    transform: translateY(-50%) rotate(3deg) scale(1, 0.76);
+  }
+  70%, 100% {
+    transform: translateY(-50%) rotate(0deg) scale(1);
+  }
 }
 
 .orb.emotion-confused .eye-left {
