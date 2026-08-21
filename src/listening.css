@@ -1,0 +1,132 @@
+.live-dot.state-listening {
+  background: #9d83ff;
+  box-shadow: 0 0 0 5px rgba(157, 131, 255, 0.12), 0 0 18px rgba(157, 131, 255, 0.5);
+}
+
+.status-aura.state-listening {
+  background: radial-gradient(circle, rgba(89, 27, 251, 0.24), transparent 68%);
+  animation: listening-aura 1.5s ease-in-out infinite;
+}
+
+.orb.state-listening {
+  animation: listening-breathe 1.8s ease-in-out infinite;
+  box-shadow:
+    inset -32px -36px 52px rgba(24, 6, 82, 0.28),
+    inset 18px 16px 40px rgba(255, 255, 255, 0.09),
+    0 42px 82px rgba(0, 0, 0, 0.44),
+    0 0 96px rgba(89, 27, 251, 0.28);
+}
+
+.orb.state-listening .eyes {
+  animation: listening-focus 2.4s ease-in-out infinite;
+}
+
+.orb.state-listening .eye-left,
+.orb.state-listening .eye-right {
+  width: 25%;
+  height: 64%;
+  top: 48%;
+  border-radius: 999px;
+  transition:
+    width 300ms cubic-bezier(.2, .8, .2, 1),
+    height 300ms cubic-bezier(.2, .8, .2, 1),
+    top 300ms cubic-bezier(.2, .8, .2, 1),
+    transform 300ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.orb.state-listening .eye-left {
+  left: 14%;
+  transform: translateY(-50%) rotate(-2deg) scale(1);
+}
+
+.orb.state-listening .eye-right {
+  right: 14%;
+  transform: translateY(-50%) rotate(2deg) scale(1);
+}
+
+.listening-wave {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 84px;
+  height: 36px;
+  opacity: 0;
+  transform: translate(-50%, 8px) scale(0.92);
+  transition: opacity 220ms ease, transform 300ms cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+}
+
+.listening-wave span {
+  display: block;
+  width: 6px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.18);
+  transform-origin: center;
+}
+
+.orb.state-listening .listening-wave {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.orb.state-listening .listening-wave span:nth-child(1) {
+  animation: listening-bar 900ms ease-in-out 0ms infinite;
+}
+
+.orb.state-listening .listening-wave span:nth-child(2) {
+  animation: listening-bar 760ms ease-in-out 120ms infinite;
+}
+
+.orb.state-listening .listening-wave span:nth-child(3) {
+  animation: listening-bar 680ms ease-in-out 40ms infinite;
+}
+
+.orb.state-listening .listening-wave span:nth-child(4) {
+  animation: listening-bar 820ms ease-in-out 180ms infinite;
+}
+
+.orb.state-listening .listening-wave span:nth-child(5) {
+  animation: listening-bar 940ms ease-in-out 80ms infinite;
+}
+
+@keyframes listening-bar {
+  0%, 100% {
+    transform: scaleY(0.55);
+    opacity: 0.62;
+  }
+  45% {
+    transform: scaleY(2.6);
+    opacity: 1;
+  }
+  72% {
+    transform: scaleY(1.15);
+    opacity: 0.82;
+  }
+}
+
+@keyframes listening-focus {
+  0%, 100% {
+    transform: translate(calc(-50% + var(--look-x)), calc(-50% + var(--look-y))) rotate(-1deg) scale(1);
+  }
+  48% {
+    transform: translate(calc(-50% + var(--look-x)), calc(-50% + var(--look-y) - 1px)) rotate(1deg) scale(1.025);
+  }
+}
+
+@keyframes listening-aura {
+  0%, 100% {
+    opacity: 0.52;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.03);
+  }
+}
