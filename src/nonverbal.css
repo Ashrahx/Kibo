@@ -144,6 +144,15 @@
   top: 50%;
   border-radius: 50%;
   transform: translateY(-50%) rotate(0deg) scale(1);
+  transition:
+    width 420ms cubic-bezier(.16, .84, .32, 1.12),
+    height 420ms cubic-bezier(.16, .84, .32, 1.12),
+    left 420ms cubic-bezier(.2, .8, .2, 1),
+    right 420ms cubic-bezier(.2, .8, .2, 1),
+    top 420ms cubic-bezier(.2, .8, .2, 1),
+    border-radius 420ms ease,
+    transform 420ms cubic-bezier(.16, .84, .32, 1.12);
+  animation: surprised-eye-grow 440ms cubic-bezier(.16, .84, .32, 1.08) both;
 }
 
 .orb.emotion-surprised .eye-left {
@@ -152,6 +161,18 @@
 
 .orb.emotion-surprised .eye-right {
   right: 8%;
+}
+
+@keyframes surprised-eye-grow {
+  0% {
+    transform: translateY(-50%) scale(0.82, 0.72);
+  }
+  68% {
+    transform: translateY(-50%) scale(1.045, 1.06);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
 }
 
 .orb.emotion-sad .eye-left,
