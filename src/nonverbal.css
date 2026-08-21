@@ -251,3 +251,141 @@
 .eyes.is-blinking .eye {
   transform: translateY(-50%) scaleY(0.08) !important;
 }
+
+/* Thinking: fixed upward gaze + classic thought-bubble dots. */
+.thinking-dots {
+  position: absolute;
+  top: 20%;
+  right: 17%;
+  width: 72px;
+  height: 62px;
+  opacity: 0;
+  transform: translateY(8px) scale(0.92);
+  transition: opacity 220ms ease, transform 320ms cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.thinking-dots span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.16);
+  opacity: 0;
+  transform: scale(0.35);
+}
+
+.thinking-dots span:nth-child(1) {
+  width: 8px;
+  height: 8px;
+  left: 0;
+  bottom: 0;
+}
+
+.thinking-dots span:nth-child(2) {
+  width: 11px;
+  height: 11px;
+  left: 19px;
+  bottom: 16px;
+}
+
+.thinking-dots span:nth-child(3) {
+  width: 15px;
+  height: 15px;
+  left: 43px;
+  bottom: 36px;
+}
+
+.orb.emotion-thinking .thinking-dots {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.orb.emotion-thinking .thinking-dots span:nth-child(1) {
+  animation: thinking-dot-pop 1.8s ease-in-out infinite;
+}
+
+.orb.emotion-thinking .thinking-dots span:nth-child(2) {
+  animation: thinking-dot-pop 1.8s ease-in-out 0.22s infinite;
+}
+
+.orb.emotion-thinking .thinking-dots span:nth-child(3) {
+  animation: thinking-dot-pop 1.8s ease-in-out 0.44s infinite;
+}
+
+.orb.emotion-thinking .eyes {
+  animation: thinking-focus 2.8s ease-in-out infinite;
+}
+
+.orb.emotion-thinking .eye-left,
+.orb.emotion-thinking .eye-right {
+  width: 22%;
+  height: 52%;
+  top: 51%;
+  border-radius: 999px;
+}
+
+.orb.emotion-thinking .eye-left {
+  left: 13%;
+  animation: thinking-concentrate-left 2.8s ease-in-out infinite;
+}
+
+.orb.emotion-thinking .eye-right {
+  right: 13%;
+  animation: thinking-concentrate-right 2.8s ease-in-out infinite;
+}
+
+@keyframes thinking-focus {
+  0%, 18% {
+    transform: translate(calc(-50% + var(--look-x) + 2px), calc(-50% + var(--look-y) - 1px)) rotate(-3deg);
+  }
+  32%, 50% {
+    transform: translate(calc(-50% + var(--look-x) + 6px), calc(-50% + var(--look-y) - 3px)) rotate(-5deg);
+  }
+  62%, 74% {
+    transform: translate(calc(-50% + var(--look-x) + 1px), calc(-50% + var(--look-y))) rotate(-2deg);
+  }
+  86%, 100% {
+    transform: translate(calc(-50% + var(--look-x) + 4px), calc(-50% + var(--look-y) - 2px)) rotate(-4deg);
+  }
+}
+
+@keyframes thinking-concentrate-left {
+  0%, 24%, 100% {
+    transform: translateY(-50%) rotate(-4deg) scale(1, 0.96);
+  }
+  42%, 58% {
+    transform: translateY(-50%) rotate(-7deg) scale(1, 0.66);
+  }
+  72% {
+    transform: translateY(-50%) rotate(-5deg) scale(1, 0.82);
+  }
+}
+
+@keyframes thinking-concentrate-right {
+  0%, 34%, 100% {
+    transform: translateY(-50%) rotate(-2deg) scale(1);
+  }
+  48%, 62% {
+    transform: translateY(-50%) rotate(-4deg) scale(0.92, 0.86);
+  }
+  76% {
+    transform: translateY(-50%) rotate(-3deg) scale(0.96, 0.94);
+  }
+}
+
+@keyframes thinking-dot-pop {
+  0%, 12% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.35);
+  }
+  28%, 58% {
+    opacity: 0.96;
+    transform: translateY(0) scale(1);
+  }
+  74%, 100% {
+    opacity: 0;
+    transform: translateY(-4px) scale(1.08);
+  }
+}
