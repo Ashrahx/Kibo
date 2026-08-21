@@ -113,6 +113,13 @@ export function Avatar({ state, emotion, action, intensity }: AvatarProps) {
           <span />
           <span />
         </div>
+        <div className="listening-wave" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
         <div className={`eyes ${blink ? 'is-blinking' : ''}`}>
           <span className="eye eye-left" />
           <span className="eye eye-right" />
