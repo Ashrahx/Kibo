@@ -37,7 +37,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: 'welcome',
     role: 'assistant',
-    text: 'Qué onda. Soy el bot de prueba. No hablo: respondo por texto y reacciono con sonidos, gestos y expresiones.',
+    text: 'Qué onda. Soy Kibo. Ahora mi cerebro corre localmente y conservo mis expresiones, gestos y sonidos.',
   },
 ];
 
@@ -143,7 +143,7 @@ function App() {
       });
 
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error ?? 'No se pudo consultar Gemini.');
+      if (!response.ok) throw new Error(payload?.error ?? 'No se pudo consultar la IA local.');
 
       const reply = payload as BotReply;
       setMessages((current) => [
