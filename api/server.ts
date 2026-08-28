@@ -71,10 +71,15 @@ app.post('/api/chat', async (req: Request<unknown, unknown, ChatBody>, res: Resp
       text: item.text.slice(0, 5_000),
     }));
 
+  const lastHistory = history.at(-1);
+  const normalizedHistory = lastHistory?.role === 'user' && lastHistory.text.trim() === message
+    ? history.slice(0, -1)
+    : history;
+
   try {
     const reply = await ai.chat({
       message,
-      history,
+      history: normalizedHistory,
       authorizedContext: undefined,
     });
 
