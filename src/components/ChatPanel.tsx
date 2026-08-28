@@ -52,8 +52,8 @@ export function ChatPanel({
     <section className="chat-card">
       <div className="chat-header">
         <div>
-          <p className="eyebrow">GEMINI AVATAR</p>
-          <h1>Bot de prueba</h1>
+          <p className="eyebrow">KIBO · IA LOCAL</p>
+          <h1>Kibo</h1>
         </div>
         <div className="header-actions">
           <button className={`mini-button ${soundEnabled ? 'active' : ''}`} onClick={onToggleSound} type="button">
@@ -66,14 +66,14 @@ export function ChatPanel({
         {messages.map((message) => (
           <div className={`message-row ${message.role}`} key={message.id}>
             <div className="message-bubble">
-              <span className="message-label">{message.role === 'user' ? 'Tú' : 'Orb'}</span>
+              <span className="message-label">{message.role === 'user' ? 'Tú' : 'Kibo'}</span>
               <p>{message.text}</p>
             </div>
           </div>
         ))}
         {busy && (
           <div className="message-row assistant">
-            <div className="message-bubble typing-bubble" aria-label="Gemini está pensando">
+            <div className="message-bubble typing-bubble" aria-label="Kibo está pensando">
               <span />
               <span />
               <span />
@@ -96,7 +96,7 @@ export function ChatPanel({
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Escríbele algo a Gemini..."
+          placeholder="Escríbele algo a Kibo..."
           rows={1}
           disabled={busy}
         />
