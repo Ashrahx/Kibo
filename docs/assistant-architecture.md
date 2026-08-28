@@ -6,6 +6,8 @@ Este documento define la base futura del asistente sin implementar todavía las 
 
 Kibo debe evolucionar de un avatar/chat de prueba a un asistente con superficies y responsabilidades separadas. La separación es intencional para evitar acoplar funcionalidades que tienen ciclos de vida distintos.
 
+La capa de IA se ejecuta localmente mediante Ollama. El avatar, las capacidades CG y los proveedores de IA permanecen desacoplados para que cambiar de modelo no obligue a modificar la UI ni las reglas de negocio.
+
 ## Superficies previstas
 
 ### 1. Chat
@@ -15,8 +17,8 @@ Modo conversacional general.
 Responsabilidades futuras:
 
 - Conversar con el usuario.
-- Responder dudas.
-- Ayudar a interpretar información.
+- Responder dudas dentro del contexto autorizado de CG.
+- Ayudar a interpretar información del sistema.
 - Servir como punto de entrada para solicitudes que después puedan convertirse en consultas o comandos VOFI.
 
 El chat no debe contener lógica directa de base de datos ni ejecutar operaciones por sí mismo. Debe delegar en un router/orquestador.
@@ -134,6 +136,14 @@ El contrato `AssistantRuntimeContext` ya contempla campos para:
 
 Esto permitirá que el asistente opere dentro del contexto de la sesión real cuando se integre en VOFI.
 
+## Fuente de verdad y modelo local
+
+Ollama interpreta intención, estructura respuestas y redacta, pero no es la fuente de verdad de CG.
+
+Para información operacional, el backend debe entregar al modelo únicamente contexto previamente obtenido mediante tools/adapters autorizados. El modelo no debe consultar SQL Server directamente ni generar SQL ejecutable.
+
+El contrato actual de respuesta visual se mantiene separado del proveedor de IA, por lo que Ollama sigue devolviendo `text`, `emotion`, `action`, `sound` e `intensity` y el frontend conserva todas las expresiones existentes.
+
 ## Router de capacidades
 
 `src/assistant/capabilities.ts` contiene un registro declarativo de capacidades futuras.
@@ -193,28 +203,34 @@ src/
     meeting/
     minutes/
     vofi-assistant/
+
+api/
+  ai/
+    types.ts
+    ollama.provider.ts
 ```
 
-No es necesario crear esas carpetas hasta que exista implementación real.
+No es necesario crear las carpetas de implementación hasta que exista lógica real para ellas.
 
 ## Reglas para mantener desacoplamiento
 
 1. El avatar refleja estado; no decide lógica de negocio.
-2. Gemini interpreta y redacta; no escribe directamente en VOFI.
+2. El LLM local interpreta y redacta; no escribe directamente en VOFI.
 3. La transcripción no genera minutas automáticamente.
 4. El generador de minutas acepta distintas fuentes mediante un contrato único.
 5. Las consultas VOFI y los comandos VOFI usan adaptadores separados de la UI.
 6. Las operaciones de escritura deben ser estructuradas y validables.
 7. La UI de cada superficie debe poder evolucionar sin modificar el avatar.
 8. Los datos autenticados de VOFI deben entrar como contexto estructurado, no inferirse del lenguaje natural.
-9. Un reporte de avance debe devolver datos estructurados antes de que Gemini los convierta en lenguaje natural.
+9. Un reporte de avance debe devolver datos estructurados antes de que el modelo los convierta en lenguaje natural.
 10. Las capacidades nuevas deben agregarse primero al registro declarativo y después conectarse a un servicio concreto.
+11. El proveedor de IA no debe tener acceso directo a internet ni a SQL Server.
 
 ## Estado actual
 
-Por ahora Kibo conserva únicamente el funcionamiento existente del avatar y del chat de prueba.
+Por ahora Kibo conserva el funcionamiento existente del avatar y del chat, pero `/api/chat` ya utiliza Ollama local mediante `api/ai/ollama.provider.ts`.
 
-No se agregó:
+Todavía no se agregó:
 
 - generación real de minutas;
 - transcripción continua;
